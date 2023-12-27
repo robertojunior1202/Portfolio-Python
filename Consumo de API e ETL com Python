@@ -1,0 +1,317 @@
+import requests
+import json
+import pandas as pd
+import datetime
+import pytz
+from datetime import datetime,timedelta
+
+
+'''-------------------------------------------------------------------------------------'''
+                           #Parametros de Desempenho (INICIO)
+'''-------------------------------------------------------------------------------------'''
+localizacao = pytz.timezone('America/Sao_Paulo')
+data_hora_atual = datetime.now(localizacao)
+data_inicio = data_hora_atual.strftime('%d/%m/%Y' ' %H:%M:%S')
+data_inicio_obj = datetime.strptime(data_inicio, '%d/%m/%Y %H:%M:%S')
+data_hoje = data_hora_atual.strftime('%d/%m/%Y')
+
+'''-------------------------------------------------------------------------------------'''
+                                        #Conectando a API
+'''-------------------------------------------------------------------------------------'''
+token = 'insira o token de autenticacao' 
+ 
+# URL base da API
+base_url = 'https://www.3sat.com.br/api/2.0'
+
+# Credencial de autenticação
+credentials = {
+    "Token": token
+}
+
+'''-------------------------------------------------------------------------------------'''
+# Solicitar lista de todos os Veículos Cadastrados
+'''-------------------------------------------------------------------------------------'''
+equipments_url = f'{base_url}/device/all'
+equipments_response = requests.post(equipments_url, json=credentials)
+veiculos = equipments_response.json()
+print("Lista de Equipamentos:")
+print(veiculos)
+
+
+'''-------------------------------------------------------------------------------------'''
+# Solicitar lista de todos os motoristas
+'''-------------------------------------------------------------------------------------'''
+drivers_url = f'{base_url}/driver/all'
+drivers_response = requests.post(drivers_url, json=credentials)
+motoristas = drivers_response.json()
+print("Lista de Motoristas:")
+print(motoristas)
+
+
+'''-------------------------------------------------------------------------------------'''
+# Solicitar lista de todas as áreas de controles em formato de polígono
+'''-------------------------------------------------------------------------------------'''
+areas_url1 = f'{base_url}/area/polygon/all'
+areas_response1 = requests.post(areas_url1, json=credentials)
+areas_controle_polygon = areas_response1.json()
+print("Lista de Áreas de Controle:")
+print(areas_controle_polygon)
+
+
+# Adicionar um novo polígono
+new_polygon_url = f'{base_url}/area/polygon/set'
+new_polygon_data = {
+    "Token": "sua_credencial_aqui",
+    "Code": "0001",
+    "Name": "Meu Polígono",
+    "Points": [
+        {"Longitude": -51.178503, "Latitude": -23.330322},
+        {"Longitude": -51.177972, "Latitude": -23.329470},
+        {"Longitude": -51.177559, "Latitude": -23.330396},
+        {"Longitude": -51.178503, "Latitude": -23.330337}
+    ],
+    "IfExistsUpdate": False
+}
+new_polygon_response = requests.post(new_polygon_url, json=new_polygon_data)
+print("Resposta ao adicionar novo polígono:")
+print(new_polygon_response.json())
+
+
+'''-------------------------------------------------------------------------------------'''
+# Solicitar lista de todas as áreas de controles em formato de circulo
+'''-------------------------------------------------------------------------------------'''
+areas_url2 = f'{base_url}/area/circle/all'
+areas_response2 = requests.post(areas_url2, json=credentials)
+areas_controle_circle = areas_response2.json()
+print("Lista de Áreas de Controle:")
+print(areas_controle_circle)
+
+
+'''-------------------------------------------------------------------------------------'''
+# Solicitar lista de todas as áreas cadastradas
+'''-------------------------------------------------------------------------------------'''
+areas_url3 = f'{base_url}/area/type/all'
+areas_response3 = requests.post(areas_url3, json=credentials)
+areas_controle_total = areas_response3.json()
+print("Lista de Áreas de Controle:")
+print(areas_controle_total)
+
+
+
+'''-------------------------------------------------------------------------------------'''
+# Solicita todas as visitas de um veículo
+'''-------------------------------------------------------------------------------------'''
+'''
+areas_url4 = f'{base_url}/area/visit/all'
+request_data = {
+    "Token": token,
+    "StartTime": "09/06/2023 06:00",  # horário de início 
+    "EndTime": "09/08/2023 20:00",    # horário de término
+    "MinimunTimeInMinutes": 5         # tempo mínimo de visita
+}
+
+visitas_response1 = requests.post(areas_url4, json=request_data, headers=credentials)
+visitas_total = visitas_response1.json()
+print("Lista de Áreas de Controle:")
+print(areas_controle_total)
+'''
+
+'''-------------------------------------------------------------------------------------'''
+# Solicita a última posição de um veiculo
+'''-------------------------------------------------------------------------------------'''
+areas_url5 = f'{base_url}/position/last'
+veiculo_RTT5G62 = '63286612506b6d1853ca8413'
+request_data = {
+    "Token": token,
+    "DeviceId":veiculo_RTT5G62        # id do veículo
+}
+
+ultima_posicao_response1 = requests.post(areas_url5, json=request_data, headers=credentials)
+ultima_posicao = ultima_posicao_response1.json()
+print("Lista de Áreas de Controle:")
+print(ultima_posicao)
+
+
+'''-------------------------------------------------------------------------------------'''
+# Solicita a Lista de Posições a partir do Id de uma posição (retira-se do Json acima)
+'''-------------------------------------------------------------------------------------'''
+'''
+areas_url6 = f'{base_url}/position/from'
+veiculo_RTT5G62 = '63286612506b6d1853ca8413'
+id_posicao = '64d515215479a49d8e078080'
+request_data = {
+    "Token": token,
+    "DeviceId":veiculo_RTT5G62,      # id do veículo
+    "LastPositionId":id_posicao,     # id do ponto retirado do Json acima
+    "Limit":1000                       # ?
+}
+lista_posicao_response1 = requests.post(areas_url6, json=request_data, headers=credentials)
+lista_posicoes = lista_posicao_response1.json()
+print("Lista de Áreas de Controle:")
+print(lista_posicoes)
+'''
+
+'''-------------------------------------------------------------------------------------'''
+# Solicita a Lista de Posições a partir de um determinado período
+'''-------------------------------------------------------------------------------------'''
+'''areas_url7 = f'{base_url}/position/period'
+veiculo_exemplo = '62866da8413j11983dt4'
+request_data = {
+    "Token": token,
+    "DeviceId":veiculo_exemplo,      # id do veículo
+    "StartDate":"01/06/2023",     # id do ponto retirado do Json acima
+    "EndDate":"10/06/2023"                       # ?
+}
+lista_posicao_period_response1 = requests.post(areas_url7, json=request_data, headers=credentials)
+lista_posicoes_periodo = lista_posicao_period_response1.json()
+print("Lista de Áreas de Controle:")
+print(lista_posicoes_periodo)
+
+'''
+#----------------------------------------------------------------------------------------------------------#
+#                                               ETL dos Dados
+#----------------------------------------------------------------------------------------------------------#
+#Tratando Lista de Veículos - Placa e ID (Etapa 01)
+colunas_veiculos = ['ID','Marca','Chassi','Cor','Modelo','Nome Veiculo','Placa','Renavam','Serial Number','UserId']
+veiculos_info = pd.DataFrame(columns=colunas_veiculos, dtype=object)
+qtd_veiculos = len(veiculos["Result"])
+for i in range(0, len(veiculos["Result"])):
+    id = veiculos["Result"][i]["Id"]
+    nome_veiculo = veiculos["Result"][i]["Name"]
+    marca = veiculos["Result"][i]["Brand"]
+    chassi = veiculos["Result"][i]["Chassi"]
+    cor = veiculos["Result"][i]["Color"]
+    modelo = veiculos["Result"][i]["Model"]
+    placa = veiculos["Result"][i]["Plate"]
+    renavam = veiculos["Result"][i]["Renavam"]
+    serial_number = veiculos["Result"][i]["SerialNumber"]
+    userId = veiculos["Result"][i]["UserId"]
+    dados = [id,marca,chassi,cor,modelo,nome_veiculo,placa,renavam,serial_number,userId]
+    temp = pd.DataFrame([dados], columns=colunas_veiculos)
+    veiculos_info = veiculos_info.append(temp, ignore_index=True)
+    print(f"Etapa 01 | Atualizando Informações Veículos - {i} de {qtd_veiculos-1}")
+
+
+#Obtendo Km Rodado por Dia por Veículo (Etapa)
+#dias_busca = [(datetime.now() - timedelta(days=3)).strftime('%d/%m/%Y'),(datetime.now() - timedelta(days=2)).strftime('%d/%m/%Y'),
+#              (datetime.now() - timedelta(days=1)).strftime('%d/%m/%Y')]
+
+dias_busca = []
+
+regredir_qts_dia = 15
+for datas in range(1,regredir_qts_dia):
+    data = (datetime.now() - timedelta(days=datas)).strftime('%d/%m/%Y')
+    dias_busca.append(data)
+#dias_busca.sort()
+
+
+for dia in range(len(dias_busca)):
+    data_busca = dias_busca[dia]
+    deslocamento_veiculos = ['ID','KmInicialDia',"KmFinalDia","RodadoDia","Data","StringdeDeslocamento"]
+    deslocamento_veiculos_info = pd.DataFrame(columns=deslocamento_veiculos, dtype=object)
+    areas_url7 = f'{base_url}/position/period'
+    
+    for i in range(0,len(veiculos_info)):
+        try:
+            veiculo_id = veiculos_info['ID'][i]
+            request_data = {
+                "Token": token,
+                "DeviceId":veiculo_id,      # id do veículo
+                "StartDate":data_busca,     # id do ponto retirado do Json acima
+                "EndDate":data_busca }
+            
+            lista_posicao_veiculo_response1 = requests.post(areas_url7, json=request_data, headers=credentials)
+            lista_posicoes_veiculo = lista_posicao_veiculo_response1.json()
+            #Obtendo Informações
+            km_inicio_dia = lista_posicoes_veiculo['Result'][0]['Odometer']
+            km_fim_dia = lista_posicoes_veiculo['Result'][-1]['Odometer']
+            rodado_dia = km_fim_dia - km_inicio_dia
+            string_deslocamento = []
+            for j in range(0, len(lista_posicoes_veiculo["Result"])):
+                ignição_ligada = lista_posicoes_veiculo["Result"][j]["IgnitionOn"]
+                if ignição_ligada == True:
+                    lat = lista_posicoes_veiculo["Result"][j]["Latitude"]
+                    long = lista_posicoes_veiculo["Result"][j]["Longitude"]
+                    string = "[" + str(lat) + "," + str(long) + "]"
+                    result = string.strip('[]').replace('"', '')
+                    coordinates = [float(coord) for coord in result.split(',')]
+                    string_deslocamento.append(coordinates)
+                
+                           
+            #Tratando Coordenadas Repitidas
+            string_deslocamento_tratada = []
+            for k in string_deslocamento:
+                if k not in string_deslocamento_tratada:
+                    string_deslocamento_tratada.append(k)
+                
+            
+            dados = [veiculo_id,km_inicio_dia,km_fim_dia,rodado_dia,data_busca,string_deslocamento_tratada]
+            temp = pd.DataFrame([dados], columns=deslocamento_veiculos)
+            deslocamento_veiculos_info = deslocamento_veiculos_info.append(temp, ignore_index=True)
+            print(f"Etapa 02 - {dia+1} de {len(dias_busca)} | Atualizando Deslocamento Veículos - {i} de {len(veiculos_info)-1}")
+        except:
+            pass
+        
+    #Juntando as duas Planilhas
+    colunas_veiculos_e_deslocamentos = ['ID','Marca','Chassi','Cor','Modelo','Nome Veiculo','Placa','Renavam','Serial Number',
+                                   'KmInicialDia',"KmFinalDia","RodadoDia","Data","StringdeDeslocamento"]
+    info_veiculos_e_deslocamentos = pd.DataFrame(columns=colunas_veiculos_e_deslocamentos, dtype=object)
+    
+    for veiculo in range(len(veiculos_info)):
+        try:
+            id = veiculos_info["ID"][veiculo]
+            marca = veiculos_info["Marca"][veiculo]
+            chassi = veiculos_info["Chassi"][veiculo]
+            cor = veiculos_info["Cor"][veiculo]
+            modelo = veiculos_info["Modelo"][veiculo]
+            nome_veiculo = veiculos_info["Nome Veiculo"][veiculo]
+            placa = veiculos_info["Placa"][veiculo]
+            renavam = veiculos_info["Renavam"][veiculo]
+            serial_number = veiculos_info["Serial Number"][veiculo]
+            
+            #Faz filtro na tabela de deslocamento pelo id do veiculo
+            filtro_deslocamento = deslocamento_veiculos_info[deslocamento_veiculos_info["ID"]==id]
+            km_inicial_dia = filtro_deslocamento["KmInicialDia"].iloc[0]
+            km_final_dia = filtro_deslocamento["KmFinalDia"].iloc[0]
+            rodado_dia = filtro_deslocamento["RodadoDia"].iloc[0]
+            data = filtro_deslocamento["Data"].iloc[0]
+            string_deslocamento = filtro_deslocamento["StringdeDeslocamento"].iloc[0]
+            
+            dados = [id, marca, chassi, cor, modelo, nome_veiculo, placa, renavam, serial_number, km_inicial_dia, km_final_dia, rodado_dia, data, string_deslocamento]
+            temp = pd.DataFrame([dados], columns = colunas_veiculos_e_deslocamentos)
+            info_veiculos_e_deslocamentos = info_veiculos_e_deslocamentos.append(temp, ignore_index=True)
+            print(f"Etapa 03 - {dia+1} de {len(dias_busca)} | Agrupando Veiculos e Deslocamento - {veiculo} de {len(veiculos_info)-1}")
+            
+        except:
+            print("Deu erro")
+    
+    #Escrevendo e Salvando Informações na Planilha Excel
+   
+    #Le planilha
+    InformacoesDeslocamentoVeiculos3Sat = pd.read_excel("InformacoesDeslocamentoVeiculos3Sat.xlsx")
+    #Removendo e/ou Incrementando Dados na Planilha - Histórico
+    InformacoesDeslocamentoVeiculos3Sat2 = InformacoesDeslocamentoVeiculos3Sat.loc[InformacoesDeslocamentoVeiculos3Sat["Data"] != data_busca]
+    InformacoesDeslocamentoVeiculos3Sat2 = InformacoesDeslocamentoVeiculos3Sat2.append(info_veiculos_e_deslocamentos, ignore_index=True)
+    #Salvando Planilha
+    escrever0 = pd.ExcelWriter('InformacoesDeslocamentoVeiculos3Sat.xlsx')
+    InformacoesDeslocamentoVeiculos3Sat2.to_excel(escrever0, 'Dados', index =False)
+    escrever0.save()
+    print(f"Etapa Gravação | Salvando InformacoesDeslocamentoVeiculos3Sat - {dia+1} de {len(dias_busca)}")
+    
+print("\n")
+print(f"Finalizado | Processo Finalizado")
+    
+
+'''-------------------------------------------------------------------------------------'''
+                                        #Parametros de Desempenho (FIM)
+'''-------------------------------------------------------------------------------------'''
+localizacao = pytz.timezone('America/Sao_Paulo')
+data_hora_atual = datetime.now(localizacao)
+data_fim = data_hora_atual.strftime('%d/%m/%Y' ' %H:%M:%S')
+data_fim_obj = datetime.strptime(data_fim, '%d/%m/%Y %H:%M:%S')
+
+diferenca_tempo = data_fim_obj - data_inicio_obj
+print("Tempo Total do Processo:", diferenca_tempo)
+
+
+
