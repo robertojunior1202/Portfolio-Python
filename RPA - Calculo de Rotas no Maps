@@ -1,0 +1,91 @@
+import pandas as pd
+from selenium import webdriver
+import pyautogui
+import requests 
+
+
+contador = 0
+
+#Lista de Propriedades (Origens)
+propriedades = pd.read_excel('LatLong_Propriedades.xlsx')
+#propriedades = ['Jandaia do Sul', 'Cambira', 'Ortigueira']
+
+#Lista de Unidades de Recebimento (Destinos)
+unidades = pd.read_excel('Unidades_Recebimento.xlsx')
+#unidades = ['Faxinal','Mandaguari']
+
+#Definindo/Construindo Relatório Matriz
+colunas = ['ID_ERP', 'ID_PROPRIEDADE']
+destinos = unidades["NOME"].tolist()
+colunas+=destinos
+total_consultas = len(propriedades)
+
+matriz = pd.DataFrame(columns=colunas, dtype = object)
+cont_save = 0
+
+
+navegador = webdriver.Chrome(False) #abre o navegador
+navegador.get("https://www.google.com.br/maps/@-23.5111757,-51.6728896,15z") 
+
+pyautogui.sleep(2)
+rota = navegador.find_element("xpath", '//*[@id="hArJGc"]').click() 
+
+cache_control = 0
+
+for index, l_origem in propriedades.iterrows():
+    info_distance = []
+    
+    pyautogui.sleep(1)
+    latlong_destino = navegador.find_element("xpath", '//*[@id="sb_ifc50"]/input').clear()
+    pyautogui.sleep(1)
+    latlong_endereco = navegador.find_element("xpath", '//*[@id="sb_ifc50"]/input').send_keys(l_origem['LATLONG'])
+    for index, l_destino in unidades.iterrows():
+        #print([l_origem['ID_ERP'],l_origem['ID_PROPRIEDADE']])
+        #print(l_origem['ID_ERP'],l_origem['ID_PROPRIEDADE'],l_origem['LATLONG'],l_destino['LATLONG'])
+        #pyautogui.sleep(1)
+        latlong_destino = navegador.find_element("xpath", '//*[@id="sb_ifc51"]/input').clear()
+        #pyautogui.sleep(1)
+        latlong_destino = navegador.find_element("xpath", '//*[@id="sb_ifc51"]/input').send_keys(l_destino['LATLONG']) 
+        #pyautogui.sleep(1)
+        pyautogui.press('Enter')
+        #navegador.find_element("xpath", '//*[@id="hArJGc"]').click() 
+        pyautogui.sleep(2)
+
+
+        try:
+            distancia = navegador.find_element("xpath", '//*[@id="section-directions-trip-0"]/div[1]/div[1]/div[1]/div[2]/div').text
+            print(distancia)   
+            
+        except:
+            distancia = 'não'
+            print(distancia)
+            
+        info_distance.append(distancia)
+        
+    info_temp = [l_origem['ID_ERP'],l_origem['ID_PROPRIEDADE']]     
+    info_temp.extend(info_distance) 
+    contador+=1      
+    
+    temp = pd.DataFrame([info_temp], columns=colunas)
+    matriz = matriz.append(temp, ignore_index=True)
+    print(info_temp)
+    #Métricas
+    percentual = (contador/total_consultas)*100
+    print('Andamento: %.2f - %d de %d' %(percentual,contador, total_consultas))
+    #print(%(contador, total_consultas))
+    escrever = pd.ExcelWriter('Matriz_rotas_08.xlsx')
+    matriz.to_excel(escrever, 'Dados', index =False)
+    escrever.save()
+    cache_control+=1
+    pyautogui.sleep(1)
+    if(cache_control>50):
+
+        pyautogui.hotkey('Ctrl','w');
+        pyautogui.sleep(2)
+        navegador = webdriver.Chrome() #abre o navegador
+        navegador.get("https://www.google.com.br/maps/@-23.5111757,-51.6728896,15z") 
+
+        pyautogui.sleep(2)
+        rota = navegador.find_element("xpath", '//*[@id="hArJGc"]').click() 
+
+        cache_control = 0
