@@ -1,0 +1,58 @@
+import math
+import geopandas as gpd
+import fiona
+from shapely.geometry import Point, Polygon
+import pandas as pd
+
+#Definindo Loop de Save
+loop_save = 10 
+save = 0
+
+#Importa Base de Poligonos - CADASTRO AMBIENTAL RURAL
+base_CAR = gpd.read_file('shapefile_car.shp')
+
+#Importa os pontos de Interesse para Identificação
+coordenadas = gpd.read_file('shapefile_pontos.shp')
+
+#Criando Matriz para as Correlações
+colunas_matriz = ['IdPropriedade','IDCar','Lat','Long']
+matriz_correlacoes = pd.DataFrame(columns=colunas_matriz, dtype=object)
+
+#Realizando a Correlação e Validação
+for i in range(0,len(coordenadas)): #len(coordenadas)
+    try:
+        ponto = coordenadas.geometry.iloc[i]
+        for j in range(0,len(base_CAR)):
+            poligono = base_CAR.geometry.iloc[j]
+            correlacao = poligono.contains(ponto)
+            if correlacao == True:
+                #Validando se Está Correto
+                #Geometry
+                id_CAR = base_CAR['cod_imovel'][j]
+                poligon_CAR = base_CAR[base_CAR['cod_imovel']== id_CAR].geometry.iloc[0]
+                #Verificacao
+                verificacao = poligon_CAR.contains(ponto)
+                if verificacao == True:
+                    dados = [coordenadas['Propriedad'][i],base_CAR['cod_imovel'][j],
+                             coordenadas['Lat'][i],coordenadas['Long'][i]]
+                    temp = pd.DataFrame([dados], columns=colunas_matriz)
+                    matriz_correlacoes = matriz_correlacoes.append(temp, ignore_index=True)
+                    save +=1
+                    print(f'O ponto {i} é True. - Save {save}')
+                    #Escrevendo o Excel conforme a Config do Loop
+                    if save >loop_save:
+                        escrever = pd.ExcelWriter('Planilhas Correlações Poligonos.xlsx')
+                        matriz_correlacoes.to_excel(escrever, 'Dados', index =False)
+                        escrever.save()
+                        save = 0
+                else:
+                    print(f'O ponto {i} é False.')
+            
+        print(f' Global: {i} de {len(coordenadas)}')
+    except:
+        pass
+        
+#Escrevendo o Excel Final
+escrever = pd.ExcelWriter(f'Planilhas Correlações Poligonos.xlsx')
+matriz_correlacoes.to_excel(escrever, 'Dados', index =False)
+escrever.save()
