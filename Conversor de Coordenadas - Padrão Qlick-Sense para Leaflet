@@ -1,0 +1,77 @@
+import pandas as pd
+
+vertices_qlick = pd.read_excel('vertices_padrao_QlickSense.xlsx')
+
+propriedades = vertices_qlick['ChavePropriedade']
+idpropriedades = list(propriedades.drop_duplicates())
+idpropriedades = pd.DataFrame(idpropriedades, columns=['ChavePropriedade'])
+
+
+
+#idpropriedades = pd.read_excel('IdPropriedades.xlsx')
+total = 2088579
+#Montando Planilha Matriz - Vertices
+colunas_matriz = ['id_propriedade','vertices']
+matriz_vertices_CRM = pd.DataFrame(columns=colunas_matriz, dtype=object)
+
+
+processados = 0
+
+for i in range (0,len(vertices_qlick)):
+    try:
+        id = idpropriedades['ChavePropriedade'][i]
+        vertices = vertices_qlick[vertices_qlick['ChavePropriedade']== id]
+        vertices = vertices.sort_values(by='idpropriedadeponto', ascending=True)
+        #Verificando quantos poligonos tem 
+        qtd_polygon = list(vertices['pontoinicio'].value_counts())[1]
+        
+        #Ajustando com 1 Polygon
+        if qtd_polygon == 1:
+            vertices_polygon = []
+            for vertice in range(0,len(vertices)):
+                lat = vertices.iloc[0]['latitude']
+                long = vertices.iloc[0]['longitude']
+                coordenada = f'[{lat},{long}]'
+                vertices_polygon.append(coordenada.strip('"'))
+                
+            # Converter a lista de strings em uma lista de listas de coordenadas
+            vertices_polygon_formatted = [eval(coordenada) for coordenada in vertices_polygon]
+            dados = [id,vertices_polygon_formatted]
+            temp = pd.DataFrame([dados], columns=colunas_matriz)
+            matriz_vertices_CRM = matriz_vertices_CRM.append(temp, ignore_index=True)
+            processados = processados + len(vertices)
+            print(f'{processados} de {total}')
+            
+        #Ajustando com mais de 1 Polygon (Multipolygon)
+        else:
+            vertices_multipolygon = []
+            #Montando Esquadro
+            vertices['ID'] = range(1, len(vertices) + 1)
+            qtd_linhas = len(vertices)
+            qtd_polygons = list(vertices['pontoinicio'].value_counts())[1]
+            pontos_iniciais = vertices.loc[vertices['pontoinicio'] == 1, 'ID'].tolist()
+            pontos_iniciais.append(len(vertices))
+            
+            
+            for pontoinicio in range(len(pontos_iniciais)-1):
+                vertices_multipolygon = []
+                for ponto in range(pontos_iniciais[pontoinicio],pontos_iniciais[pontoinicio+1]):
+                    
+                    lat = vertices.iloc[ponto-1]['latitude']
+                    long = vertices.iloc[ponto-1]['longitude']
+                    coordenada = f'[{lat},{long}]'
+                    vertices_multipolygon.append(coordenada.strip('"'))
+                    
+                # Converter a lista de strings em uma lista de listas de coordenadas
+                vertices_multipolygon_formatted = [eval(coordenada) for coordenada in vertices_multipolygon]
+                dados = [id,vertices_multipolygon_formatted]
+                temp = pd.DataFrame([dados], columns=colunas_matriz)
+                matriz_vertices_CRM = matriz_vertices_CRM.append(temp, ignore_index=True)
+                processados = processados + len(vertices)
+                print(f'{processados} de {total}')
+    except:
+        pass
+            
+escrever = pd.ExcelWriter(f'Planilhas de Vertices Padrão Leaflet.xlsx')
+matriz_vertices_CRM.to_excel(escrever, 'Dados', index =False)
+escrever.save()
