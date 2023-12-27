@@ -1,0 +1,88 @@
+import geopandas as gpd
+import fiona
+from shapely.geometry import Point, Polygon
+import pandas as pd
+import win32com.client as win32
+
+
+#Importa Base de Poligonos - Municipios
+base_municipios = gpd.read_file('SHP_MUNICIPIO_PR.shp')
+
+#Importa os pontos de Interesse para Identificação
+propriedades = gpd.read_file('Shape Coordenadas.shp')
+
+
+planilha_Lista = pd.read_excel('lista_email.xlsm',sheet_name="Lista")
+
+#Criando Matriz para as Correlações
+colunas_matriz = ['IdPropriedade','Nome Propriedade','Nome Pessoa','Nome Superior','CarteiraAtual','Carteira Atual Nome','Consultor Atual','IDMunicipioLocal','Nome Muninicipio Local',
+                  'Id Municipio Corrdenadas','Nome Municipio Coordenadas','Validacao']
+matriz_validacao = pd.DataFrame(columns=colunas_matriz, dtype=object)
+
+#Efetuando a Conferencia
+for propriedade in range(0,len(propriedades)):
+    try:
+        ponto = propriedades.geometry.iloc[propriedade]
+        for municipio in range(0,len(base_municipios)):
+            poligono = base_municipios.geometry.iloc[municipio]
+            busca = poligono.contains(ponto)
+            if busca == True:
+                correlacao = propriedades['Municipio'][propriedade].split("-")[0] == base_municipios['CD_MUN'][municipio]
+                
+                dados = [propriedades['Propriedad'][propriedade],propriedades['Prop. Nome'][propriedade],propriedades['NomePessoa'][propriedade],
+                         propriedades['NomePess_1'][propriedade],propriedades['RegiaoAtua'][propriedade].split('-')[0],propriedades['RegiaoAtua'][propriedade],
+                         propriedades['ConsultorA'][propriedade],propriedades['Municipio'][propriedade].split("-")[0],propriedades['Municipio'][propriedade].split("-")[1],
+                         base_municipios['CD_MUN'][municipio],base_municipios['NM_MUN'][municipio].upper(),correlacao]
+                temp = pd.DataFrame([dados], columns=colunas_matriz)
+                matriz_validacao = matriz_validacao.append(temp, ignore_index=True)
+        print(f'{propriedade} de {len(propriedades)}')
+                
+    except:
+        pass
+    
+    
+escrever = pd.ExcelWriter('Conferencia de Coordenadas Geral.xlsx')
+matriz_validacao.to_excel(escrever, 'Dados', index =False)
+escrever.save()  
+
+
+#Estatísticas
+correto = len(matriz_validacao[matriz_validacao['Validacao']==True])
+errado = len(matriz_validacao[matriz_validacao['Validacao']==False])
+percent_correto = (correto/len(propriedades))*100
+print(f"{percent_correto}% das Coordenadas estão Corretas")
+    
+    
+#Segmentando Planilhas
+matriz_validacao2 = matriz_validacao[matriz_validacao['Validacao']==False]
+
+escrever = pd.ExcelWriter('Conferencia de Coordenadas - Falsos.xlsx')
+matriz_validacao2.to_excel(escrever, 'Dados', index =False)
+escrever.save()  
+
+consultores = list(set(matriz_validacao2["Consultor Atual"]))
+
+
+#Criando Matriz Gabarito
+colunas_gabarito = ['IdConsultor','Nome Arquivo','EnderecoExcel','Destinatario' ]
+matriz_gabarito = pd.DataFrame(columns=colunas_gabarito, dtype=object)
+
+for i in range (0,len(consultores)):
+    try:
+        planilha = matriz_validacao2[matriz_validacao2["Consultor Atual"]==consultores[i]].reset_index(drop=True)
+        escrever = pd.ExcelWriter(f'Dados Gerados/{planilha["Carteira Atual Nome"][0]}.xlsx')
+        planilha.to_excel(escrever, 'Dados', index =False)
+        escrever.save() 
+        
+        if(str(consultores[i])[:3]=="999"):
+            email = planilha_Lista[planilha_Lista["IdConsultor"]==int(str(consultores[i])[3:])]["Destinatario"].values
+        else:
+            email = planilha_Lista[planilha_Lista["IdConsultor"]==consultores[i]]["Destinatario"].values
+        nome = matriz_validacao2[matriz_validacao2["Consultor Atual"]==consultores[i]]["Carteira Atual Nome"].iloc[0]
+        dados2 = [consultores[i],nome,(f'Dados Gerados/{planilha["Carteira Atual Nome"][0]}.xlsx'),email[0]]
+        temp = pd.DataFrame([dados2], columns=colunas_gabarito)
+        matriz_gabarito = matriz_gabarito.append(temp, ignore_index=True)
+        print(f"{i} de {len(consultores)-1}")
+    except:
+        print("Erro")
+      
