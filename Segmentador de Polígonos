@@ -1,0 +1,29 @@
+import geopandas as gpd
+import fiona
+from shapely.geometry import Point, Polygon,MultiPolygon
+import pandas as pd
+import simplekml
+
+#Importa Base de Poligonos Total
+base_car = gpd.read_file('base_poligonos_car.shp')
+
+#Importa os poligonos de Interesse para Exportação
+propriedades = gpd.read_file('Coordenadas com CAR.csv')
+
+propriedade = 0
+for propriedade in range (0, len(propriedades)):
+    nome_car = propriedades['CAR'][propriedade]
+    nome_arquivo = str(propriedade)+ " - " + str(propriedades['PropriedadeID'][propriedade])+ " - " + str(propriedades['NomePessoaSup'][propriedade])+ " - " + str(propriedades['Prop. Nome'][propriedade])
+    #Selecionando Poligono CAR
+  
+    polygon_car = base_car[base_car['cod_imovel'] == nome_car].geometry.iloc[0]
+    
+    # Criar uma GeoDataFrame com o polígono filtrado
+    data = {'geometry': [polygon_car]}
+    gdf = gpd.GeoDataFrame(data, geometry='geometry')
+    
+    # Definir o nome do arquivo KML
+    output_kml_file = 'poligono_car' + nome_car
+    
+    # Exportar a GeoDataFrame para um arquivo KML
+    gdf.to_file(output_kml_file, driver='shp')
