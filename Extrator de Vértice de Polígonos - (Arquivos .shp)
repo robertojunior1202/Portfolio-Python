@@ -1,0 +1,82 @@
+import geopandas as gpd
+import pandas as pd
+from shapely.geometry import MultiPolygon, Polygon
+
+# Carregar o arquivo SHP
+shapefile_path = 'arquivo_shp_poligonos.shp'
+gdf = gpd.read_file(shapefile_path)
+
+#Montando Planilha Matriz - Vertices
+colunas_matriz = ['cod_imovel_car','vertices']
+matriz_vertices_CAR = pd.DataFrame(columns=colunas_matriz, dtype=object)
+
+#Planilha de Erros
+colunas_matriz_erros = ['cod_imovel_car']
+matriz_erros_CAR = pd.DataFrame(columns=colunas_matriz, dtype=object)
+
+#Padrões de Poligonos
+type_polygon = type(gdf.iloc[0]['geometry'])
+type_multipolygon = type(gdf.iloc[2]['geometry'])
+
+
+##############################################################
+#Extraindo Vertices e Add na Matriz Vertices CAR
+for i in range(0,len(gdf)):
+    #Multipolygon
+    if(type(gdf.iloc[i]['geometry'])==type_multipolygon):
+        try:
+            multi_polygon = gdf.iloc[i]['geometry']
+            for polygon in multi_polygon.geoms:
+                vertices_polygon = polygon.exterior.coords
+                vertices_multipolygon=[]
+                for j in range(0, len(vertices_polygon)):    
+                    vertices_multipolygon.append(vertices_polygon[j])
+                dados = [gdf.iloc[i]['cod_imovel'],vertices_multipolygon]
+                temp = pd.DataFrame([dados], columns=colunas_matriz)
+                matriz_vertices_CAR = matriz_vertices_CAR.append(temp, ignore_index=True)
+                print(f"{i} de {len(gdf)}")
+            
+        except:
+            dados = [gdf.iloc[i]['cod_imovel']]
+            temp = pd.DataFrame([dados], columns=colunas_matriz_erros)
+            matriz_erros_CAR = matriz_erros_CAR.append(temp, ignore_index=True)
+            print(f"{i} de {len(gdf)} - Deu Erro")
+           
+        
+    #Polygon
+    else:
+        a = gdf.iloc[i]['geometry'].exterior.coords
+        vertices2 = []
+        for j in range(0,len(a)):
+            try:
+                vertices2.append(a[j])
+                dados = [gdf.iloc[i]['cod_imovel'],vertices2]
+                temp = pd.DataFrame([dados], columns=colunas_matriz)
+                matriz_vertices_CAR = matriz_vertices_CAR.append(temp, ignore_index=True)
+                print(f"{i} de {len(gdf)}")
+            except:
+                dados = [gdf.iloc[i]['cod_imovel']]
+                temp = pd.DataFrame([dados], columns=colunas_matriz_erros)
+                matriz_erros_CAR = matriz_erros_CAR.append(temp, ignore_index=True)
+                print(f"{i} de {len(gdf)} - Deu Erro")
+            
+    
+
+#Fatiando o DataSet
+n = 1000000
+n2= 2000001
+for j in range(0,1):
+    colunas_matriz = ['cod_imovel_car','vertices']
+    matriz_vertices_CAR02 = pd.DataFrame(columns=colunas_matriz, dtype=object)
+    for i in range(9000000,len(matriz_vertices_CAR)):
+        dados = [matriz_vertices_CAR.iloc[i]['cod_imovel_car'],matriz_vertices_CAR.iloc[i]['vertices']]
+        temp = pd.DataFrame([dados], columns=colunas_matriz)
+        matriz_vertices_CAR02 = matriz_vertices_CAR02.append(temp, ignore_index=True)
+        print(f"{i} de {len(matriz_vertices_CAR)} - {j} de 9")
+
+    escrever = pd.ExcelWriter(f'Planilhas de Vertices Cocari {j} - Paraná.xlsx')
+    matriz_vertices_CAR02.to_excel(escrever, 'Dados', index =False)
+    escrever.save()
+    n = n2-1
+    n2 = n2 + 1000000
+      
