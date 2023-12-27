@@ -1,0 +1,60 @@
+import pandas as pd
+import os
+
+#Carregando planilhas existentes em na pasta "Planilha de Dados Brutos"
+local_planilhas = 'insira o endereço local das planilhas '
+planilhas_brutas_nomes = os.listdir(local_planilhas)
+
+sheet_name= "digite o nome da aba a ser carregada"
+
+
+#Definindo Colunas Relatório Matriz
+colunas_matriz_padrao = ['CodIBGE','NomeMunicipio','Cultura','Area(ha)','Ano']
+matriz_total = pd.DataFrame(columns=colunas_matriz_padrao, dtype = object)
+matriz_geral = pd.DataFrame(columns=colunas_matriz_padrao, dtype = object)
+
+#Area Plantada (Ha)
+k = 0
+for planilhas in planilhas_brutas_nomes:
+    k+=1
+    #Importando Planilhas Brutas (Padrão Adapar)
+    #print(local_planilhas +"/"+ planilhas)
+    planilha = pd.read_excel(local_planilhas +"/"+ planilhas,sheet_name = sheet_name)
+    
+    #Tratando Planilha
+    ano = int(planilha["Unnamed: 3"][2])
+    #print(ano)
+    
+    for i in range(4,37):
+        cultura = planilha["Unnamed: "+str(i)][3]
+        matriz_total = pd.DataFrame(columns=colunas_matriz_padrao, dtype = object)
+        for j in range(5,len(planilha)-1):
+            
+            id_ibge = planilha["Unnamed: 1"][j]
+            nome_municipio = planilha["Unnamed: 2"][j]
+            area = planilha["Unnamed: "+str(i)][j]
+            dados = [id_ibge,nome_municipio,cultura,area,ano]
+
+            temp = pd.DataFrame([dados], columns=colunas_matriz_padrao)
+            matriz_total = matriz_total.append(temp,ignore_index=True)
+            print(f'({k}|{len(planilhas_brutas_nomes)-1}) - {i}|36 - {j}|{len(planilha)-2}')
+        
+        matriz_geral = matriz_geral.append(matriz_total,ignore_index=True)
+        
+
+
+#Salvar Segmentado por Cultura
+lista_culturas = list(set(matriz_geral["Cultura"]))
+
+for i in range(0,len(lista_culturas)):
+    nome = lista_culturas[i]
+    matriz_filtrada = matriz_geral[matriz_geral["Cultura"]==nome]
+    
+    #Renomeando nome Abacaxi
+    if nome == 'Abacaxi*':
+        nome = "Abacaxi"
+    
+    escrever = pd.ExcelWriter(local_planilhas +"/"+ 'Planilhas Agrupadas/Área colhida (Hectares)/PAM Total - ' + sheet_name + ' - '+nome+'.xlsx')
+    matriz_filtrada.to_excel(escrever, 'Dados', index =False)
+    escrever.save()
+    print(f'{i+1}|{len(lista_culturas)} - Salvando Planilhas ...')
