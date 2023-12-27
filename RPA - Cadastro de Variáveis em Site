@@ -1,0 +1,72 @@
+import pandas as pd
+import pyautogui
+
+gabarito = pd.read_excel('Gabarito-rebanho.xlsx')
+pyautogui.sleep(10)
+
+for i in range (690,732):
+    #Move para o Adicionar
+    pyautogui.moveTo(1573,250,0.5) #desktop
+    #pyautogui.moveTo(1466,289,0.5)
+    pyautogui.click()
+    pyautogui.sleep(1)
+    #Descrição
+    pyautogui.write(gabarito["Descrição"][i])
+    pyautogui.sleep(1)
+    pyautogui.press("tab")
+    pyautogui.sleep(1)
+    #Espécie
+    pyautogui.write(gabarito["ESPÉCIE"][i])
+    pyautogui.sleep(1)
+    pyautogui.press("tab")
+    pyautogui.sleep(1)
+    #Raça
+    pyautogui.write(gabarito["RAÇA"][i])
+    pyautogui.sleep(1)
+    pyautogui.press("tab")
+    pyautogui.sleep(1)
+    #CategoriaAngus - Macho
+    pyautogui.write(gabarito["CATEGORIA"][i])
+    pyautogui.sleep(1)
+    pyautogui.press("tab")
+    pyautogui.sleep(1)
+    #Potencial
+    pyautogui.write(str(gabarito["POTENCIAL"][i]).replace('.',','))
+    pyautogui.sleep(1)
+    pyautogui.press("tab")
+    pyautogui.sleep(1)
+    #Move para Nível Tecnologicos
+    pyautogui.moveTo(762,428,0.5) #desktop
+    #pyautogui.moveTo(714,529,0.5)
+    pyautogui.click()
+    #Nível Tecnologico
+    pyautogui.write(gabarito["NÍVEL TECNOLOGICO"][i])
+    pyautogui.sleep(1)
+    pyautogui.press("tab")
+    #Move para Data
+    pyautogui.moveTo(1081,235,0.5) #desktop
+    #pyautogui.moveTo(1100,269,0.5)
+    pyautogui.click()
+    pyautogui.sleep(0.5)
+    #Move para seta que muda os anos
+    pyautogui.moveTo(1205,265,0.5) #desktop
+    #pyautogui.moveTo(1297,322,0.5)
+    pyautogui.click()
+    pyautogui.sleep(0.5)
+    pyautogui.click()
+    pyautogui.sleep(0.5)
+    pyautogui.click()
+    pyautogui.sleep(0.5)
+    pyautogui.click()
+    pyautogui.sleep(0.5)
+    pyautogui.click()
+    pyautogui.sleep(0.5)
+    #Move para o meio da data
+    pyautogui.moveTo(1106,380,0.5) #desktop
+    #pyautogui.moveTo(1166,465,0.5)
+    pyautogui.click()
+    pyautogui.sleep(1)
+    pyautogui.press("tab", presses=8)
+    pyautogui.sleep(1)
+    pyautogui.press("enter")
+    pyautogui.sleep(5)
