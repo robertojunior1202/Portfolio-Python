@@ -1,0 +1,22 @@
+import pandas as pd
+import os
+
+caminho_pasta_planilhas = 'caminho_pasta_planilhas'
+nomes_planilhas = os.listdir(caminho_pasta_planilhas)
+
+i=0
+for i in range(0,len(nomes_planilhas)):
+    planilha = pd.read_excel(caminho_pasta_planilhas+"/"+nomes_planilhas[i], sheet_name=None)
+    abas = list(planilha.keys())
+    
+    if abas:
+        nome_antigo = abas[6]
+        nome_novo = "Valor da producao"
+        
+        planilha[nome_novo] = planilha.pop(nome_antigo)
+        
+        # Salve o arquivo Excel com as alterações
+        with pd.ExcelWriter(caminho_pasta_planilhas+"/"+nomes_planilhas[i], engine='xlsxwriter') as writer:
+            for sheet, data in planilha.items():
+                data.to_excel(writer, sheet_name=sheet, index=False)
+    print(f'{i+1} de {len(nomes_planilhas)}')
