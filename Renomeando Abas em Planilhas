@@ -11,7 +11,7 @@ for i in range(0,len(nomes_planilhas)):
     
     if abas:
         nome_antigo = abas[6]
-        nome_novo = "Valor da producao"
+        nome_novo = "nome_nova_aba"
         
         planilha[nome_novo] = planilha.pop(nome_antigo)
         
