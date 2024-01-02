@@ -1,0 +1,107 @@
+import os
+import pandas as pd
+import win32com.client as win32 
+
+#Endereço Planilhas
+endereco_local = 'local_enderecos'
+
+#Carregando Planilhas
+planilha_indicadores = pd.read_excel(endereco_local+'Indicadores.xlsm',sheet_name="Indicadores", skiprows=1)
+planilha_Lista = pd.read_excel(endereco_local+'Indicadores.xlsm',sheet_name="Lista")
+planilha_Propriedade = pd.read_excel(endereco_local+'Indicadores.xlsm',sheet_name="propriedades")
+planilha_Regiao = pd.read_excel(endereco_local+'Indicadores.xlsm',sheet_name="Regiao", skiprows=1)
+planilha_Lista['NomePlanilha'] = ""
+planilha_ListaSupervisores['NomePlanilha'] = ""
+
+endereco_pasta_planilhas = endereco_local + "/"+"Planilhas Detalhadas"
+
+#Segmentando Dados por Consultor
+consultor = 0
+for consultor in range(0,len(planilha_Regiao)):
+    try:
+        soc_consultor = planilha_indicadores[planilha_indicadores['IdConsultorAtual'] == planilha_Regiao["Vendedor"][consultor]]
+        soc_consultor = soc_consultor[['IdClienteSuperior','ClienteSuperior',"IdRegiao",'IdConsultorAtual','NomeConsultorAtual','Região',
+                  'IdFilial','NomeFilial','Tem Propriedade', 'Tem Plano Safra','Efetividade (Potencial Baixo ou Sem)']]
+
+        propriedades_consultor = planilha_Propriedade[planilha_Propriedade['ConsultorAtual'] == planilha_Regiao["Vendedor"][consultor]]
+        propriedades_consultor = propriedades_consultor[['Prop. Nome','IdPessoa','NomePessoa','IdPessoaSup','NomePessoaSup','TemCroqui',
+                                             'RegiaoAtual','ConsultorAtual','Ha','Filial Carteira','Lat/Long','CAR CRM']]
+        propriedades_consultor.loc[propriedades_consultor["Lat/Long"] == 0, "Lat/Long"] = "Sem Coordenadas"
+        propriedades_consultor.loc[propriedades_consultor["CAR CRM"] == "-1", "CAR CRM"] = "Sem CAR"
+        
+        #Escrevendo Planilha
+        nomeRegiao = planilha_Regiao["Nome Região"][consultor]
+        
+        with pd.ExcelWriter(f'{endereco_pasta_planilhas}/Planilha Detalhada de Indicadores - {nomeRegiao} .xlsx', engine='xlsxwriter') as writer:
+            # Salvar planilha1 na primeira aba (aba "Aba1")
+            soc_consultor.to_excel(writer, sheet_name='SOC', index=False)
+            
+            # Salvar planilha2 na segunda aba (aba "Aba2")
+            propriedades_consultor.to_excel(writer, sheet_name='Propriedades', index=False)
+        
+        endereco_planilha_criada = f'{endereco_pasta_planilhas}/Planilha Detalhada de Indicadores - {nomeRegiao} .xlsx'
+        
+        #Escrevendo na Lista o Endereco da Planilha
+        try:
+            linha = planilha_Lista[planilha_Lista["IdConsultor"]== planilha_Regiao["Vendedor"][consultor]].index[0]
+            planilha_Lista["NomePlanilha"][linha] = endereco_planilha_criada
+        except:
+            print("Lista não encontrada")
+        
+        print(f"Relatório {consultor} de {len(planilha_Regiao)-1}")
+    except:
+        print("Erro")
+
+
+'''-------------------------------------------------------------------------------------'''
+                  #Enviando Relatórios para Lista de Transmissão - Outlook (Consultores)
+'''-------------------------------------------------------------------------------------''' 
+
+# criar a integração com o outlook
+outlook = win32.Dispatch('outlook.application')
+
+#Carregando Lista de Transmissao - Email
+lista_emails = planilha_Lista[planilha_Lista["Envia"]=="Sim"].reset_index(drop=True)
+#Refatorar os index
+
+#email_enviar = 0
+for email_enviar in range(0,len(lista_emails)):
+    try:
+        # criar um email
+        email = outlook.CreateItem(0)
+        
+        nome_relatorio = lista_emails["Nome Arquivo"][email_enviar]
+        # Escrevendo as informações do e-mail
+        email.Subject = "Indicadores - "+nome_relatorio
+        email.HTMLBody = f"""
+        <p>CRM - Indicadores de Cadastro</p>
+        <p>Você está recebendo em seu email o relatório de Indicadores.</p>
+        
+        <p>Este e-mail é enviado automaticamente:</p>
+        
+        <p>Responder Apenas no Privado para:</p>
+        <ul>
+            <li>insira o seu e-mail - insira o seu cargo</li>
+        </ul>
+        
+        <p>Filial/Regional:{nome_relatorio} </p>
+        <p>Atenciosamente,</p>
+        <p>Departamento de Inteligência de Negócios.</p>
+        """
+        
+        relatorios = [lista_emails["Anexo (Concatena Caminho + Nome Arquivo)"][email_enviar],
+                      lista_emails["NomePlanilha"][email_enviar]]
+        
+        #Anexando Relatorios 
+        #email.To = '"'+str(lista_emails["Destinatario"][email_enviar])+'"'
+        email.To = str(lista_emails["Destinatario"][email_enviar])
+        for i in range(0,len(relatorios)):
+            anexo = relatorios[i]
+            email.Attachments.Add(anexo)
+        
+        #Escrevendo Relatório
+        email.Send()
+        print(f"Email Enviado - {email_enviar} de {len(lista_emails)-1}")
+    except:
+        #erro = lista_emails["ID"][email_enviar]
+        print(f"Erro ao Enviar o Email")
