@@ -1,0 +1,33 @@
+import pandas as pd
+
+df = pd.read_excel("P:/Logistica Integrada/CRM/Clover/Desempenho2024/1ºSemestre_2024.xlsx",sheet_name="baseConsultor")
+colunas = df.columns
+
+colunas_matriz = ['IdConsultor','IdArea','IdFilial','Mês/Ano','Meta']
+matriz_ajustada = pd.DataFrame(columns=colunas_matriz, dtype=object)
+i = 958
+#len(df)-9
+for i in range(0,len(df)-9):
+    id_consultor = df["Cod. Cons..1"][i]
+    id_area = int(df["Id Area"][i])
+    id_filial = int(df["IdFilial"][i])
+    
+    for j in range(10,len(colunas)-2):
+        data_filtro = colunas[j]
+        data = str(colunas[j])[:10]
+        mes_ano = data[8:] +"-"+ data[5:7] +"-"+ data[0:4]
+        
+        valor = df[data_filtro][i]
+        if pd.isna(valor):
+            valor = 0
+            
+        dados = [id_consultor, id_area, id_filial, mes_ano, valor]
+                 
+        temp = pd.DataFrame([dados], columns=colunas_matriz)
+        matriz_ajustada = matriz_ajustada.append(temp, ignore_index=True)
+        print(f'{i} de {len(df)-10} - {j} de {len(colunas)-3}')
+    
+#Escrevendo o Excel Final
+escrever = pd.ExcelWriter(f'P:/Logistica Integrada/CRM/Clover/Desempenho2024/Planilha Meta Ajustada.xlsx')
+matriz_ajustada.to_excel(escrever, 'Dados', index =False)
+escrever.save()
