@@ -1,6 +1,7 @@
 import pandas as pd
 
-df = pd.read_excel("P:/Logistica Integrada/CRM/Clover/Desempenho2024/1ºSemestre_2024.xlsx",sheet_name="baseConsultor")
+caminho_planilha = "insira o caminho aqui"
+df = pd.read_excel(caminho_planilha,sheet_name="baseConsultor")
 colunas = df.columns
 
 colunas_matriz = ['IdConsultor','IdArea','IdFilial','Mês/Ano','Meta']
@@ -28,6 +29,6 @@ for i in range(0,len(df)-9):
         print(f'{i} de {len(df)-10} - {j} de {len(colunas)-3}')
     
 #Escrevendo o Excel Final
-escrever = pd.ExcelWriter(f'P:/Logistica Integrada/CRM/Clover/Desempenho2024/Planilha Meta Ajustada.xlsx')
+escrever = pd.ExcelWriter(f'caminho_planilha + "/"+ "Planilha Meta Ajustada.xlsx"')
 matriz_ajustada.to_excel(escrever, 'Dados', index =False)
 escrever.save()
