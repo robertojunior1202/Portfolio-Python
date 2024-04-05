@@ -1,0 +1,204 @@
+import pandas as pd
+import pyautogui
+'''
+#Captura as dimensoes da tela
+pyautogui.size()
+#Captura a coordenada do mouse
+pyautogui.sleep(2)
+pyautogui.position()
+
+#Mouse
+
+#Move o Mouse com tempo gradual (se 0 é imediato)
+
+pyautogui.moveTo(100,200,1)
+#Clique do Mouse
+pyautogui.click()
+pyautogui.click(x=100,y=200)
+pyautogui.doubleclick(x=100,y=200)
+
+#Teclado
+
+#Escrever 
+pyautogui.write("Hello World")
+#Pressionar tecla
+pyautogui.press("enter")
+pyautogui.press("enter", presses=4)
+#Tempo de espera
+pyautogui.sleep(2)
+
+'''
+
+#Setar Usuario
+pyautogui.sleep(5)
+usuarios = ["patrick.souza",'marcos.farias','nathalia.campos','paola.silva','mario.almeida']
+
+for usuario in usuarios:
+    print(usuario)
+    pyautogui.moveTo(1778,130) #Clica no Usuario
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(1)
+    pyautogui.moveTo(1830,190) #Clica Configurar contexto
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(1)
+    pyautogui.moveTo(785,247) #Clica no usuario/login
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(1)
+    pyautogui.write(usuario) #Escreve o nome do Usuario
+    pyautogui.sleep(1)
+    pyautogui.press("enter")
+    pyautogui.sleep(2)
+    pyautogui.moveTo(1084,312) #Clica na filial
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(1)
+    pyautogui.press("enter")
+    pyautogui.sleep(2)
+    pyautogui.moveTo(1194,384) #Clica em alterar
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(10)
+
+    #Ir para o Plano Safra
+    pyautogui.press("f9") #Clica em Pesquisar
+    pyautogui.sleep(3)
+    pyautogui.write("plano de safra") #Digita Plano de Safra
+    pyautogui.sleep(1)
+    pyautogui.moveTo(1177,228) #Clica em Buscar
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(1)
+    pyautogui.moveTo(801,359) #Clica No plano de safra
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.click()
+    pyautogui.click()
+    pyautogui.click()
+    pyautogui.sleep(8)
+    
+
+    #CADASTRANDO O PLANO SAFRA
+    nome_produtor,safra,nivel_tecnologico,propriedade,area,produtividade,potencial = "Jose","24/25-SOJA","PR BAIXO","est","45,2","65,5","3650"
+    
+    pyautogui.sleep(4)
+    pyautogui.moveTo(1582,262) #Clica em Adicionar
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(5)
+    pyautogui.moveTo(520,246) #Clica em Produtor
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(3)
+    pyautogui.write(nome_produtor)
+    pyautogui.sleep(1)
+    pyautogui.press("enter")
+    pyautogui.sleep(2) 
+    pyautogui.moveTo(1093,310) #Clica em Tipo de Atendimento
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(1)
+    pyautogui.write("na filial")
+    pyautogui.sleep(1)
+    pyautogui.press("enter")
+    pyautogui.sleep(1)
+    pyautogui.moveTo(618,540) #Clica em Safra
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(1)
+    pyautogui.write(safra)
+    pyautogui.sleep(1)
+    pyautogui.press("enter")  
+    pyautogui.sleep(1)
+    pyautogui.moveTo(1335,538) #Clica em Nivel Tecnologico
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(1)
+    pyautogui.write(nivel_tecnologico)
+    pyautogui.sleep(1)
+    pyautogui.press("enter")  
+    pyautogui.sleep(1)
+    pyautogui.moveTo(412,590) #Clica em Propriedade
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(1)
+    pyautogui.write(propriedade)
+    pyautogui.sleep(1)
+    pyautogui.press("enter") 
+    pyautogui.sleep(1)
+    pyautogui.moveTo(1435,659) #Clica em Area Plano Safra
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(1)
+    pyautogui.press("del") 
+    pyautogui.press("del") 
+    pyautogui.press("del") 
+    pyautogui.press("del") 
+    pyautogui.press("del") 
+    pyautogui.press("del") 
+    pyautogui.press("del") 
+    pyautogui.press("del") 
+    pyautogui.press("del") 
+    pyautogui.press("del") 
+    pyautogui.sleep(1)
+    pyautogui.write(area)
+    pyautogui.sleep(1)
+    pyautogui.moveTo(925,723) #Clica em Area Produtividade
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(1)
+    pyautogui.write(produtividade)
+    pyautogui.sleep(1)
+    pyautogui.moveTo(391,783) #Clica em Potencial
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(1)
+    pyautogui.write(potencial)
+    pyautogui.sleep(1)
+    pyautogui.moveTo(1658,843) #Clica em Salvar
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(5)
+    pyautogui.moveTo(1113,564) #Clica em Salvar
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(2)
+  
+    
+    #Voltar pro menu
+    pyautogui.moveTo(63,188) #Clica em Buscar
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(10)
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+'''
+
+#Exluindo Plano Safra
+pyautogui.sleep(5)
+
+for i in range (500):
+    #Move para o Adicionar
+    pyautogui.moveTo(1791,256) #desktop
+    pyautogui.sleep(1)
+    pyautogui.click()
+    pyautogui.sleep(1)
+    pyautogui.press("enter",presses=1)
+    pyautogui.sleep(2)
+    
+'''    
+    
+
