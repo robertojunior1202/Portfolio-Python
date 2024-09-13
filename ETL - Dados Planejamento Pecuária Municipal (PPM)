@@ -1,0 +1,50 @@
+import pandas as pd
+import os
+
+
+#Variaveis de Definição
+ano_inicial = 1974
+qtd_colunas_por_ano = 6
+
+
+#Importa Base PPM
+base = pd.read_excel("P:/Logistica Integrada/CRM/Roberto/14. PowerBI/PAM IBGE/Pesquisa da Pecuaria Municipal (PPM)/Planilha Pecuaria 01.xlsx", skiprows=1)
+
+
+#Tabela Modelo
+colunas = ["Id IBGE","Nome Municipio","Ano","Categoria","Quantidade"]
+matriz = pd.DataFrame(columns=colunas, dtype=object)
+
+
+
+#ETL
+
+
+nome_colunas = list(base.columns)
+for linha in range(5281,len(base)-1):
+    #print(base["Unnamed: 1"][linha])
+    for coluna in range(2,len(nome_colunas)):
+        #print(base[nome_colunas[coluna]])
+            
+        id_ibge = base["Unnamed: 0"][linha]
+        nome_municipio = base["Unnamed: 1"][linha]
+        nome_coluna = nome_colunas[coluna].split(".")[0] #coluna começa em 2
+        quantidade = base[nome_colunas[coluna]][linha]
+        try:
+            ano = ano_inicial + int(nome_colunas[coluna].split(".")[1])
+        except:
+            ano = ano_inicial
+            
+        dados = [id_ibge,nome_municipio,ano,nome_coluna,quantidade]
+             
+        temp = pd.DataFrame([dados], columns=colunas)
+        matriz = matriz.append(temp, ignore_index=True)
+        print(f'{coluna} de {len(nome_colunas)} - {linha} de {len(base)-1}')
+
+matriz2 = matriz.iloc[500000:,:]
+
+escrever = pd.ExcelWriter(f"P:/Logistica Integrada/CRM/Roberto/14. PowerBI/PAM IBGE/Pesquisa da Pecuaria Municipal (PPM)/Bases - ETL/Planilha Pecuaria-Lote 14.xlsx")
+matriz.to_excel(escrever, 'Dados', index =False)
+escrever.save()
+
+#os.system(f'msg * "Lote {lote} Finalizado !!!"')
