@@ -1,0 +1,51 @@
+import win32com.client
+import datetime
+import os
+
+# Caminho onde os anexos serão salvos
+save_path = r"C:\Users\roberto.souza\Desktop\Scripts\relatorios"
+
+# Cria a pasta caso não exista
+os.makedirs(save_path, exist_ok=True)
+
+# Gera a data de hoje no formato dd/mm/aaaa
+today = datetime.datetime.now().strftime("%d/%m/%Y")
+
+# Texto esperado no assunto (com hífen após "COCARI")
+#subject_filter = f"BOLETIM - COCARI - {today}"
+subject_filter = f"Orgulho de Ser Cocari -"
+
+
+
+# Conecta ao Outlook
+outlook_app = win32com.client.Dispatch("Outlook.Application")
+print("📌 Versão do Outlook em uso:", outlook_app.Version)
+
+outlook = outlook_app.GetNamespace("MAPI")
+
+# 👉 Se precisar forçar o login em um perfil específico (ex.: "Outlook365"), descomente a linha abaixo:
+# outlook.Logon("Outlook365")
+
+# Acessa a caixa de entrada padrão
+inbox = outlook.GetDefaultFolder(6)  # 6 = Inbox
+
+# Pega os e-mails e ordena do mais recente para o mais antigo
+messages = inbox.Items
+messages.Sort("[ReceivedTime]", True)
+
+# Procura pelo e-mail do dia com o assunto desejado
+found = False
+for message in messages:
+    try:
+        if subject_filter in message.Subject:
+            attachments = message.Attachments
+            for attachment in attachments:
+                attachment.SaveAsFile(os.path.join(save_path, attachment.FileName))
+                print(f"✅ Anexo salvo: {attachment.FileName}")
+            found = True
+            break  # para no primeiro e-mail encontrado
+    except Exception as e:
+        print("⚠ Erro:", e)
+
+if not found:
+    print(f"❌ Nenhum e-mail encontrado com assunto: {subject_filter}")
